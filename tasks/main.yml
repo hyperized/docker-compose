@@ -21,7 +21,7 @@
         mode: 0755
 
   when:
-    - docker_compose_exists.stat.exists == False
+    - not docker_compose_exists.stat.exists
     - docker_compose_state == "present"
 
 - name: remove docker-compose
