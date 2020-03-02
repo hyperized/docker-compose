@@ -1,0 +1,36 @@
+---
+- name: determine existance of docker-compose
+  stat:
+    path: "{{ docker_compose_path }}"
+  register: docker_compose_exists
+
+- name: install docker-compose
+  block:
+    - name: get operating system name
+      command: uname -s
+      register: docker_compose_os_name
+
+    - name: get machine architecture
+      command: uname -m
+      register: docker_compose_os_architecture
+
+    - name: obtain docker-compose file
+      get_url:
+        url: "{{ docker_compose_url }}-{{ docker_compose_os_name.stdout }}-{{ docker_compose_os_architecture.stdout }}"
+        dest: "{{ docker_compose_path }}"
+        mode: 0755
+
+  when:
+    - docker_compose_exists.stat.exists == False
+    - docker_compose_state == "present"
+
+- name: remove docker-compose
+  block:
+    - name: remove docker-compose file
+      file:
+        path: "{{ docker_compose_path }}"
+        state: absent
+
+  when:
+    - docker_compose_exists.stat.exists
+    - docker_compose_state == "absent"

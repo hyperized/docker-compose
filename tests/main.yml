@@ -1,0 +1,34 @@
+---
+- hosts: localhost
+  become: yes
+  roles:
+    - hyperized.docker-compose
+
+  tasks:
+    - command: docker-compose --version
+      register: docker_compose
+      changed_when: False
+
+    - debug:
+        var: docker_compose
+
+    - assert:
+        that:
+          - '"docker-compose version" in docker_compose.stdout'
+
+- hosts: localhost
+  become: yes
+  roles:
+    - role: hyperized.docker-compose
+      vars:
+        docker_compose_state: absent
+
+  tasks:
+    - command: docker-compose --version
+      register: docker_compose
+      ignore_errors: True
+      changed_when: False
+
+    - assert:
+        that:
+          - docker_compose.failed
